@@ -27,8 +27,8 @@ OPTIONS:
    --help       Print this message;
 
 EXAMPLES: 
-   $0 --use-patch=false --base-dir=/home/testuser --cleanup=true
-   $0 --tck-bundle=http://csgweb.us.oracle.com/java/re/cldc-tck/8.0/nightly/bundles/cldc_tck-8_0-rr-b113-10_aug_2014.jar
+   waitNetworkService --host=mail.ru --port=25
+   waitNetworkService --sleeptime=3 --timeout=30 --host=ya.ru --port=80
 
 EOF
    }
