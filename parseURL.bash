@@ -3,15 +3,16 @@
 #function to parse URL in accordance with https://tools.ietf.org/html/rfc3986
 parseURL() {
 
-  SCHEME="$(echo "$1" | grep -e '^[-+.0-9A-Za-z]\+://' | sed -e s,://.*,://,)"
-  TMP_URL=${1#$SCHEME} #remove the protocol
-  USERINFO="$(echo "${TMP_URL}" | grep -e '^[^\/]*@' | cut -d@ -f1)" 
-  USERNAME="$(echo "${USERINFO}" | cut -d: -f1)"
-  PASSWORD=${USERINFO#$USERNAME}
-  TMP_URL=${TMP_URL#"${USERINFO}@"}
-  SOCKET=$(echo "${TMP_URL}" | cut -d/ -f1)
-  HOST=$(echo "${SOCKET}" | cut -d: -f1)
-  PORT=$(echo "${SOCKET}" | grep : | sed -e s,^$HOST,,)
-
+  URL_SCHEME="$(echo "$1" | grep -e '^[-+.0-9A-Za-z]\+://' | sed -e s,://.*,,)"
+  TMP_URL=${1#$URL_SCHEME:\/\/} #remove the protocol
+  URL_AUTHORITY="$(echo "${TMP_URL}" | tr -s \# ? | tr -s \/ ? | cut -d? -f1 )"
+  URL_USERINFO="$(echo "${URL_AUTHORITY}" | grep @ | cut -d@ -f1)" 
+  URL_USERNAME="$(echo "${URL_USERINFO}" | cut -d: -f1)"
+  URL_PASSWORD=${URL_USERINFO#$URL_USERNAME:}
+  URL_SOCKET=${URL_AUTHORITY#$URL_USERINFO@}
+  URL_HOST=$(echo "${URL_SOCKET}" | cut -d: -f1)
+  URL_PORT=$(echo "${URL_SOCKET#$URL_HOST}" | sed -e s,^:,, )
+  TMP_URL=${TMP_URL#"${URL_AUTHORITY}"}
+  URL_PATH="${TMP_URL}"
 }
 

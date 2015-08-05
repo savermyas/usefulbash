@@ -41,10 +41,26 @@ VALID_URLS=(
 "http://1337.net"
 "http://a.b-c.de"
 "http://223.255.255.254"
+"ftp://ftp.is.co.za/rfc/rfc1808.txt"
+"http://www.ietf.org/rfc/rfc2396.txt"
+"ldap://[2001:db8::7]/c=GB?objectClass?one"
+"telnet://192.0.2.16:80/"
 )
 
 
 for i in "${VALID_URLS[@]}"; do
    parseURL $i
-   echo "$i -> ${SCHEME}${USERNAME}:${PASSWORD}@${HOST}:${PORT}"
+   echo -e "$i -> \
+${URL_SCHEME:+"Scheme "\033[32m"$URL_SCHEME "}\033[0m\
+${URL_AUTHORITY:+"Authority "\033[32m"$URL_AUTHORITY "}\033[0m\
+${URL_USERINFO:+"Userinfo "\033[32m"$URL_USERINFO "}\033[0m\
+${URL_USERNAME:+"Username "\033[32m"$URL_USERNAME "}\033[0m\
+${URL_PASSWORD:+"Password "\033[32m"$URL_PASSWORD "}\033[0m\
+${URL_HOST:+"Host "\033[32m"$URL_HOST "}\033[0m\
+${URL_PORT:+"Port "\033[32m"$URL_PORT "}\033[0m\
+${URL_PATH:+"Path "\033[32m"$URL_PATH "}\033[0m\
+${URL_QUERY:+"Query "\033[32m"$URL_QUERY "}\033[0m\
+${URL_FRAGMENT:+"Fragment "\033[32m"$URL_FRAGMENT "}\033[0m\
+"
+#, Authority: ${}${USERNAME}:${PASSWORD}@${HOST}:${PORT}"
 done
