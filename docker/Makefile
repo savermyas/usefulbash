@@ -4,7 +4,8 @@
 # to Docker executable file and a script to run Docker daemon
 # in user's home bin/ directory.
 
-DOCKER_VERSION=17.04.0-ce
+DOCKER_VERSION=17.12.0-ce
+DOCKER_HOME=$(HOME)/docker
 DOCKER_INSTALLATION=downloads/docker-$(DOCKER_VERSION).tgz
 DOCKER_BIN=$(HOME)/bin/docker
 
@@ -22,41 +23,40 @@ clean :
 	rm -f $(DOCKERD_SCRIPT)
 	rm -f $(DOCKER_BIN)
 	rm -f $(DOCKER_COMPOSE_BIN)
-	rm -f $(shell readlink -f bin/docker)
-	rm -f $(shell readlink -f bin/docker-compose) 
+	rm -f $(DOCKER_HOME)/bin/*
 
 $(DOCKER_INSTALLATION) :
 	mkdir -p downloads
-	curl https://get.docker.com/builds/Linux/x86_64/docker-$(DOCKER_VERSION).tgz > $@
+	curl https://download.docker.com/linux/static/stable/x86_64/docker-$(DOCKER_VERSION).tgz > $@
 
-$(shell readlink -f bin/docker) : $(DOCKER_INSTALLATION)
-	mkdir -p bin data log run tmp
+$(DOCKER_HOME)/bin/docker : $(DOCKER_INSTALLATION)
+	mkdir -p $(DOCKER_HOME)/bin $(DOCKER_HOME)/data $(DOCKER_HOME)/log $(DOCKER_HOME)/run tmp
 	tar xvf $(DOCKER_INSTALLATION) -C tmp/
-	cp -r tmp/docker/* bin/
+	cp -r tmp/docker/* $(DOCKER_HOME)/bin/
 	rm -rf tmp
 
-$(shell readlink -f bin/docker-compose) :
+$(DOCKER_HOME)/bin/docker-compose :
 	mkdir -p bin
-	curl https://github.com/docker/compose/releases/download/$(DOCKER_COMPOSE_VERSION)/docker-compose-Linux-x86_64 > $@
+	curl -L https://github.com/docker/compose/releases/download/$(DOCKER_COMPOSE_VERSION)/docker-compose-Linux-x86_64 > $@
 
-$(DOCKER_BIN) : $(shell readlink -f bin/docker)
-	ln -fs $(shell readlink -f bin/docker) $(HOME)/bin/docker
-	ln -fs $(shell readlink -f bin/docker-containerd) $(HOME)/bin/docker-containerd
+$(DOCKER_BIN) : $(DOCKER_HOME)/bin/docker
+	ln -fs $(DOCKER_HOME)/bin/docker $(HOME)/bin/docker
+	ln -fs $(DOCKER_HOME)/bin/docker-containerd $(HOME)/bin/docker-containerd
 	chmod +x $@
 
-$(DOCKER_COMPOSE_BIN) : $(shell readlink -f bin/docker-compose)
-	ln -fs $(shell readlink -f bin/docker-compose) $(HOME)/bin/docker-compose
+$(DOCKER_COMPOSE_BIN) : $(DOCKER_HOME)/bin/docker-compose
+	ln -fs $(DOCKER_HOME)/bin/docker-compose $(HOME)/bin/docker-compose
 	chmod +x $@
 
 $(DOCKERD_ENV) :
-	echo export PATH=\"$(PATH):$(shell readlink -f bin)\" > $@
-	echo DOCKERD_BIN=\"$(shell readlink -f bin/dockerd)\" >> $@
-	echo DOCKERD_PID=\"$(shell readlink -f run/dockerd.pid)\" >> $@
-	echo DOCKERD_LOG=\"$(shell readlink -f log/dockerd.log)\" >> $@
-	echo DOCKERD_ERR=\"$(shell readlink -f log/dockerd.err)\" >> $@
-	echo DOCKERD_OPTS=\"-g $(shell readlink -f data) \
-                            --pidfile $(shell readlink -f run/dockerd.pid) \
-                            --exec-root $(shell readlink -f run/)\
+	echo export PATH=\"$(PATH):$(DOCKER_HOME)/bin\" > $@
+	echo DOCKERD_BIN=\"$(DOCKER_HOME)/bin/dockerd\" >> $@
+	echo DOCKERD_PID=\"$(DOCKER_HOME)/run/dockerd.pid\" >> $@
+	echo DOCKERD_LOG=\"$(DOCKER_HOME)/log/dockerd.log\" >> $@
+	echo DOCKERD_ERR=\"$(DOCKER_HOME)/log/dockerd.err\" >> $@
+	echo DOCKERD_OPTS=\"--data-root $(DOCKER_HOME)/data \
+                            --pidfile $(DOCKER_HOME)/run/dockerd.pid \
+                            --exec-root $(DOCKER_HOME)/run/\
                             \" >> $@
 
 $(DOCKERD_SCRIPT) :
